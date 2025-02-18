@@ -1,0 +1,9 @@
+---
+description: General rules around python project management
+globs: 
+---
+Always use uv run file.py to run projects
+
+Always use uv add package to install packages, never use uv pip install
+
+For running tests, also use uv run pytest tests/test_merit.py

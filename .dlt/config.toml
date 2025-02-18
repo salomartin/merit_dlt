@@ -1,0 +1,5 @@
+[runtime]
+request_max_attempts = 3  # Merit API has a strict 3 attempts limit
+request_backoff_factor = 2  # Merit recommends exponential backoff with factor 2
+request_timeout = 60  # Merit API typically times out at 60 seconds
+request_max_retry_delay = 10  # Merit recommends max delay of 10 seconds between retries

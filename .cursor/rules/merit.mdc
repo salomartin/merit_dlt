@@ -1,0 +1,44 @@
+---
+description: Merit API and data structures
+globs: *.py
+---
+For incremental loading, all requests to Merit API have the following 3 fields:
+PeriodStart	Date	In the format yyyymmdd
+PeriodEnd	Date	Period length max 3 months!
+DateType	Int	0- Documentdate, 1- Changeddate
+
+Request limit is set 60 requests per minute. When limit is exceeded, API waits until it is capable of processing again.
+
+Aktiva API changes it’s request limit response. Previously Merit API used timing(sleep) method to restrict excess request. With version (-27-03-2024-)  all requests that exceeds limiter capacity will be terminated with status code 429 (Too Many Requests) and RateLimiter info will be added to response headers.
+
+Content-Type: application/json; charset=utf-8
+Date: Sun, 24 Mar 2024 08:56:22 GMT
+Pragma: no-cache
+Retry-After: 2
+X-RateLimit-Limit: the maximum number of allowed requests in a 60 second window.
+X-RateLimit-Remaining: the number of remaining requests in the current 60 second window.
+X-RateLimit-Reset: A unix timestamp indicating when the current window ends; after this timestamp, the rate limit resets to the value in X-RateLimit-Limit.
+
+The maximum limit for all documents(orders, invoices, offers, gltransactions) to be entered is 200 rows.
+
+Service URL
+The Merit Aktiva API has a two points of entry. The URL depends which localization the company is using:
+
+V1
+For Estonian localization:	https://aktiva.merit.ee/api/v1/
+For Polish localization:	https://program.360ksiegowosc.pl/api/v1/
+V2
+For Estonian localization:	https://aktiva.merit.ee/api/v2/
+For Polish localization:	https://program.360ksiegowosc.pl/api/v2/
+
+You should not init with v2 or v1 or or even provide override, because the v2 and v1 endpoints exist at the same time, some endpoints only have v1 and others have v2 - this should be kept internal to the client
+
+All endpoints below must use incremental loading as they support the ChangedDate and DAteType request parameters, other sources should not use it and should fully replace / update data when executed:
+- GL Transactions (Full Details)
+- GL Transactions List
+- Payments List
+- Inventory Movements List
+- Purchase Invoices List (V2)
+- Recurring Invoices List
+- Sales Offers List
+- Sales Invoices List (V2)
