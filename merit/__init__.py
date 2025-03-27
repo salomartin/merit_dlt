@@ -186,7 +186,7 @@ def aktiva( # type: ignore
             # Transactional resources with incremental loading
             {
                 "name": "purchase_invoices",
-                "primary_key": ["pih_id"],
+                "primary_key": ["PIHId"],
                 "endpoint": {
                     "path": "v2/getpurchorders",
                     "paginator": transactional_paginator,
@@ -200,7 +200,7 @@ def aktiva( # type: ignore
             },
             {
                 "name": "sales_invoices",
-                "primary_key": ["sih_id"],
+                "primary_key": ["SIHId"],
                 "endpoint": {
                     "path": "v2/getinvoices",
                     "paginator": transactional_paginator,
@@ -231,7 +231,7 @@ def aktiva( # type: ignore
             },
             {
                 "name": "payments",
-                "primary_key": ["ph_id"],
+                "primary_key": ["PHId"],
                 "endpoint": {
                     "path": "v2/getpayments",
                     "paginator": transactional_paginator,
