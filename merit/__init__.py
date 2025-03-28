@@ -51,14 +51,6 @@ def aktiva( # type: ignore
     start_date = initial_start_date or default_start
     end_date = period_end_date or default_end
 
-    # Create paginator for transactional data with incremental loading
-    transactional_paginator = MeritDatePaginator(
-        start_date=start_date,  # Provide start_date to override defaults if specified
-        end_date=end_date,      # Provide end_date to override defaults if specified
-        interval_days=7,  # Use smaller interval for transactional data
-        date_type=1  # Use ChangedDate for incremental loading
-    )
-
     config: RESTAPIConfig = {
         "client": {
             "base_url": "https://aktiva.merit.ee/api/",  # No v1/v2 in base URL
@@ -70,7 +62,9 @@ def aktiva( # type: ignore
             "endpoint": {
                 "method": "POST",  # All Merit API endpoints use POST
                 "response_actions": [clean_response],  # Clean all responses
-                "paginator": transactional_paginator,
+                "paginator": {
+                    "type": "single_page",
+                },
             },
         },
         "resources": [
@@ -175,6 +169,9 @@ def aktiva( # type: ignore
                 "name": "payment_types",
                 "endpoint": {
                     "path": "v2/getpaymenttypes",
+                    "params": {
+                        "param": "", # This endpoint gives HTTP 500 error when no params provided
+                    },
                 },
             },
             {
@@ -189,7 +186,7 @@ def aktiva( # type: ignore
                 "primary_key": ["PIHId"],
                 "endpoint": {
                     "path": "v2/getpurchorders",
-                    "paginator": transactional_paginator,
+                    "paginator": MeritDatePaginator(start_date=start_date, end_date=end_date, interval_days=30, date_type=1),
                     "incremental": {
                         "start_param": "PeriodStart",
                         "cursor_path": "ChangedDate",
@@ -203,7 +200,7 @@ def aktiva( # type: ignore
                 "primary_key": ["SIHId"],
                 "endpoint": {
                     "path": "v2/getinvoices",
-                    "paginator": transactional_paginator,
+                    "paginator": MeritDatePaginator(start_date=start_date, end_date=end_date, interval_days=30, date_type=1),
                     "incremental": {
                         "start_param": "PeriodStart",
                         "cursor_path": "ChangedDate",
@@ -217,7 +214,7 @@ def aktiva( # type: ignore
                 "primary_key": ["GLBId"],
                 "endpoint": {
                     "path": "v1/GetGLBatchesFull",
-                    "paginator": transactional_paginator,
+                    "paginator": MeritDatePaginator(start_date=start_date, end_date=end_date, interval_days=30, date_type=1),
                     "incremental": {
                         "start_param": "PeriodStart",
                         "cursor_path": "ChangedDate",
@@ -234,7 +231,7 @@ def aktiva( # type: ignore
                 "primary_key": ["PHId"],
                 "endpoint": {
                     "path": "v2/getpayments",
-                    "paginator": transactional_paginator,
+                    "paginator": MeritDatePaginator(start_date=start_date, end_date=end_date, interval_days=30, date_type=1),
                     "incremental": {
                         "start_param": "PeriodStart",
                         "cursor_path": "ChangedDate",
