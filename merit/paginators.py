@@ -4,6 +4,8 @@ from typing import Any, List, Optional
 from dlt.sources.helpers.rest_client.paginators import BasePaginator
 from dlt.sources.helpers.requests import Response, Request
 
+from merit.dates import format_date, parse_date
+
 
 class MeritDatePaginator(BasePaginator):
     """A paginator for Merit API that handles date-based pagination.
@@ -46,20 +48,20 @@ class MeritDatePaginator(BasePaginator):
         # Set the overall period
         self.start_date = start_date
         self.end_date = end_date
-        
-        # Initialize the current period
-        self.current_start = start_date
-        self.current_end = min(
-            start_date + timedelta(days=interval_days - 1),
-            end_date
-        )
-
-    def _format_date(self, date: datetime) -> str:
-        """Format date as required by Merit API (yyyymmdd)."""
-        return date.strftime("%Y%m%d")
 
     def init_request(self, request: Request) -> None:
         """Initialize the first request with the first period."""
+        # Prefer existing start date from incremental loader
+        if "PeriodStart" in request.params:
+            self.current_start = parse_date(request.params["PeriodStart"])
+        else:
+            self.current_start = self.start_date
+
+        self.current_end = min(
+            self.current_start + timedelta(days=self.interval_days - 1),
+            self.end_date
+        )
+
         self.update_request(request)
 
     def update_state(self, response: Response, data: Optional[List[Any]] = None) -> None:
@@ -69,19 +71,23 @@ class MeritDatePaginator(BasePaginator):
         has reached the overall end date.
         """
         # Calculate the next period
-        next_start = self.current_end + timedelta(days=1)
+        # Start from the same date where last ended,
+        # otherwise we are missing the records on the change day,
+        # API gets records that are => PeriodStart and < PeriodEnd
+        next_start = self.current_end
+        
+        # Check if we've reached the end
+        if next_start.date() >= self.end_date.date():
+            self._has_next_page = False
+            return
+
+        self._has_next_page = True
         next_end = min(
             next_start + timedelta(days=self.interval_days - 1),
             self.end_date
         )
-        
-        # Check if we've reached the end
-        if next_start > self.end_date:
-            self._has_next_page = False
-        else:
-            self._has_next_page = True
-            self.current_start = next_start
-            self.current_end = next_end
+        self.current_start = next_start
+        self.current_end = next_end
 
     def update_request(self, request: Request) -> None:
         """Update request parameters for the next page."""
@@ -91,7 +97,7 @@ class MeritDatePaginator(BasePaginator):
             
         # Update the period parameters in request params
         request.params.update({
-            "PeriodStart": self._format_date(self.current_start),
-            "PeriodEnd": self._format_date(self.current_end),
+            "PeriodStart": format_date(self.current_start),
+            "PeriodEnd": format_date(self.current_end),
             "DateType": self.date_type,
         })
