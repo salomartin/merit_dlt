@@ -45,7 +45,7 @@ def parse_date(date_str: str) -> datetime:
     Returns:
         datetime object
     """
-    return datetime.strptime(date_str, "%Y%m%d")
+    return datetime.strptime(date_str, "%Y%m%d").replace(tzinfo=timezone.utc)
 
 
 def get_default_dates() -> Tuple[datetime, datetime]:
