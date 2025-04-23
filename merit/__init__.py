@@ -8,7 +8,7 @@ from typing import Any
 
 from .auth import MeritAuth
 from .paginators import MeritDatePaginator
-from .dates import get_default_dates, convert_date_format, format_date
+from .dates import get_default_dates, convert_date_format
 
 def clean_response(response: Response, *args: Any, **kwargs: Any) -> Response:
     """Clean null bytes from Merit API responses.
@@ -190,7 +190,7 @@ def aktiva( # type: ignore
                     "incremental": {
                         "start_param": "PeriodStart",
                         "cursor_path": "ChangedDate",
-                        "initial_value": format_date(start_date),
+                        "initial_value": start_date.strftime("%Y-%m-%d"),
                         "convert": convert_date_format,
                     }
                 },
@@ -204,7 +204,7 @@ def aktiva( # type: ignore
                     "incremental": {
                         "start_param": "PeriodStart",
                         "cursor_path": "ChangedDate",
-                        "initial_value": format_date(start_date),
+                        "initial_value": start_date.strftime("%Y-%m-%d"),
                         "convert": convert_date_format,
                     }
                 },
@@ -218,7 +218,7 @@ def aktiva( # type: ignore
                     "incremental": {
                         "start_param": "PeriodStart",
                         "cursor_path": "ChangedDate",
-                        "initial_value": format_date(start_date),
+                        "initial_value": start_date.strftime("%Y-%m-%d"),
                         "convert": convert_date_format,
                     },
                     "params": {
@@ -235,7 +235,7 @@ def aktiva( # type: ignore
                     "incremental": {
                         "start_param": "PeriodStart",
                         "cursor_path": "ChangedDate",
-                        "initial_value": format_date(start_date),
+                        "initial_value": start_date.strftime("%Y-%m-%d"),
                         "convert": convert_date_format,
                     }
                 },
